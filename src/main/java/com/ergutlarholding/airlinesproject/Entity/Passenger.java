@@ -29,8 +29,10 @@ public class Passenger {
 
     private String gender;
 
-    private LocalDate birthDate;
+    @Column(nullable = false)
+    private String password;
 
+    private LocalDate birthDate;
     @Column(unique = true)
     private String mail;
 
