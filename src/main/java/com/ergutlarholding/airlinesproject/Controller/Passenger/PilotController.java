@@ -15,6 +15,7 @@ PATCH (Kısmi Güncelleme): Dosyayı açar, sadece senin belirlediğin alanı (�
 
 
  */
+import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotLogin;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotRequest;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotResponse;
 import com.ergutlarholding.airlinesproject.Servis.PilotService;
@@ -35,6 +36,12 @@ public class PilotController {
     @PostMapping("/register")
     public ResponseEntity<PilotResponse> register(@RequestBody PilotRequest request) {
         return ResponseEntity.ok(pilotService.savePilot(request));
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<PilotResponse> login(@RequestBody PilotLogin pilotLogin) {
+        return ResponseEntity.ok(pilotService.login(pilotLogin));
+
     }
 
     @GetMapping

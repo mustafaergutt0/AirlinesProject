@@ -1,5 +1,6 @@
 package com.ergutlarholding.airlinesproject.Servis;
 
+import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotLogin;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotRequest;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotResponse;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotSalaryUptade;
@@ -90,5 +91,21 @@ public class PilotService {
                 pilot.getSalary(),
                 pilot.getBirthDate()
         );
+    }
+
+
+    // PilotService.java içine ekle
+    public PilotResponse login(PilotLogin loginRequest) {
+        // 1. Mail adresiyle pilotu bul
+        Pilot pilot = pilotRepository.findByMail(loginRequest.mail())
+                .orElseThrow(() -> new RuntimeException("Bu mail adresiyle kayıtlı pilot bulunamadı!"));
+
+        // 2. Şifreyi kontrol et (Gerçek projede BCrypt ile encode edilir ama şimdilik düz metin)
+        if (!pilot.getPassword().equals(loginRequest.password())) {
+            throw new RuntimeException("Hatalı şifre!");
+        }
+
+        // 3. Giriş başarılıysa pilot bilgilerini dön
+        return mapToResponse(pilot);
     }
 }
