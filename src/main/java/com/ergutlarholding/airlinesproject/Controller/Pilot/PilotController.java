@@ -1,4 +1,4 @@
-package com.ergutlarholding.airlinesproject.Controller.Passenger;
+package com.ergutlarholding.airlinesproject.Controller.Pilot;
 // Patch gelen isteiğin bir kısmını put gibi değil bır kısmı güncellecek demek
 
 

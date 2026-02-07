@@ -30,7 +30,7 @@ public class Airport {
     @Column(unique = true, nullable = false)
     private String code; // Örn: IST
 
-    // Airport.java içine eklenecekler:
+
     @OneToMany(mappedBy = "departureAirport", cascade = CascadeType.ALL)
     private List<Flight> departingFlights;
 
