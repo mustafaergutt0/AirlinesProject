@@ -2,7 +2,7 @@ package com.ergutlarholding.airlinesproject.Controller.TicketController;
 
 import com.ergutlarholding.airlinesproject.Dto.Ticket.TicketRequest;
 import com.ergutlarholding.airlinesproject.Dto.Ticket.TicketResponse;
-import com.ergutlarholding.airlinesproject.Servis.TicketService;
+import com.ergutlarholding.airlinesproject.Services.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

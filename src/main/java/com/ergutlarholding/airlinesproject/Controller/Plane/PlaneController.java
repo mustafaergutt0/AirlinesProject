@@ -2,7 +2,7 @@ package com.ergutlarholding.airlinesproject.Controller.Plane;
 
 import com.ergutlarholding.airlinesproject.Dto.Plane.PlaneRequest;
 import com.ergutlarholding.airlinesproject.Dto.Plane.PlaneResponse;
-import com.ergutlarholding.airlinesproject.Servis.PlaneService;
+import com.ergutlarholding.airlinesproject.Services.PlaneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +28,6 @@ public class PlaneController {
 
     @DeleteMapping
     public ResponseEntity<String> deleteAll() {  // Repsınse entity ne döcneegi vermen önemli
-        return ResponseEntity.ok(planeService.DeleteAllPlanes()) ;
+        return ResponseEntity.ok(planeService.deleteAllPlanes()) ;
     }
 }

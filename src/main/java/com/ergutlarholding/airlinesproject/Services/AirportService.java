@@ -1,47 +1,34 @@
-package com.ergutlarholding.airlinesproject.Servis;
+package com.ergutlarholding.airlinesproject.Services;
 
 import com.ergutlarholding.airlinesproject.Dto.Airport.AirportRequest;
 import com.ergutlarholding.airlinesproject.Dto.Airport.AirportResponse;
 import com.ergutlarholding.airlinesproject.Entity.Airport;
+import com.ergutlarholding.airlinesproject.Mapper.AirportMapper;
 import com.ergutlarholding.airlinesproject.Repository.AirportRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class AirportService {
 
     private final AirportRepository airportRepository;
+    private final AirportMapper airportMapper; // Mapper enjekte edildi
 
     public AirportResponse saveAirport(AirportRequest request) {
-        Airport airport = Airport.builder()
-                .name(request.name())
-                .city(request.city())
-                .country(request.country())
-                .code(request.code().toUpperCase()) // Kodları her zaman büyük harf yapalım
-                .build();
+        // Builder yerine MapStruct kullanarak Entity oluşturduk
+        Airport airport = airportMapper.toEntity(request);
+        airport.setCode(request.code().toUpperCase()); // Senin kuralın burada duruyor
 
-        return mapToResponse(airportRepository.save(airport));
+        return airportMapper.toResponse(airportRepository.save(airport));
     }
 
     public List<AirportResponse> getAllAirports() {
-        return airportRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
-
-    private AirportResponse mapToResponse(Airport airport) {
-        return new AirportResponse(
-                airport.getId(),
-                airport.getName(),
-                airport.getCity(),
-                airport.getCountry(),
-                airport.getCode()
-        );
+        // Stream ve map yerine tek satırda liste dönüşümü
+        return airportMapper.toResponseList(airportRepository.findAll());
     }
 
     public String deleteAirportByCode(String code) {
@@ -54,45 +41,35 @@ public class AirportService {
 
     public AirportResponse showAirport(String code) {
         return airportRepository.findByCode(code.toUpperCase())
-                .map(this::mapToResponse) // Eğer havalimanı varsa Response'a çevir
-                .orElseThrow(() -> new RuntimeException("Havalimanı bulunamadı: " + code)); // Yoksa hata fırlat
+                .map(airportMapper::toResponse) // Manuel mapToResponse yerine mapper kullanıldı
+                .orElseThrow(() -> new RuntimeException("Havalimanı bulunamadı: " + code));
     }
 
     public AirportResponse updateAirport(String code, AirportRequest airportRequest) {
-        // 1. Önce güncellenecek havalimanını veritabanında bul
         Airport existingAirport = airportRepository.findByCode(code.toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Güncellenecek havalimanı bulunamadı: " + code));
 
-        // 2. Mevcut nesnenin bilgilerini request'ten gelenlerle güncelle
-        existingAirport.setName(airportRequest.name());
-        existingAirport.setCity(airportRequest.city());
-        existingAirport.setCountry(airportRequest.country());
-        existingAirport.setCode(airportRequest.code().toUpperCase());
+        // Manuel set'ler yerine MapStruct ile tüm alanları güncelledik
+        airportMapper.updateEntityFromDto(airportRequest, existingAirport);
+        existingAirport.setCode(airportRequest.code().toUpperCase()); // Kuralı koruduk
 
-        // 3. Güncellenmiş nesneyi kaydet ve response olarak dön
-        Airport updated = airportRepository.save(existingAirport);
-        return mapToResponse(updated);
+        return airportMapper.toResponse(airportRepository.save(existingAirport));
     }
 
-
     public AirportResponse patchAirport(String code, Map<String, Object> updates) {
-        // 1. Önce havalimanını bul
         Airport airport = airportRepository.findByCode(code.toUpperCase())
                 .orElseThrow(() -> new RuntimeException("Güncellenecek havalimanı bulunamadı: " + code));
 
-        // 2. Map içindeki anahtarlara göre sadece ilgili alanları güncelle
+        // Senin özel switch-case yapını ellemedim, iş mantığın burada çalışıyor
         updates.forEach((key, value) -> {
             switch (key) {
                 case "name" -> airport.setName((String) value);
                 case "city" -> airport.setCity((String) value);
                 case "country" -> airport.setCountry((String) value);
                 case "code" -> airport.setCode(((String) value).toUpperCase());
-            }  // hangi alan bulunursa onu güncelleyecek swicth key yapıs onu sağlıyro
+            }
         });
 
-        // 3. Değişiklikleri kaydet
-        return mapToResponse(airportRepository.save(airport));
+        return airportMapper.toResponse(airportRepository.save(airport));
     }
-
-
 }

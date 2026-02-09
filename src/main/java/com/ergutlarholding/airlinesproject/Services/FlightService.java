@@ -1,10 +1,20 @@
-package com.ergutlarholding.airlinesproject.Servis;
+package com.ergutlarholding.airlinesproject.Services;
 
-import com.ergutlarholding.airlinesproject.Dto.Flight.*;
-import com.ergutlarholding.airlinesproject.Entity.*;
-import com.ergutlarholding.airlinesproject.Repository.*;
+import com.ergutlarholding.airlinesproject.Dto.Flight.FlightRequest;
+import com.ergutlarholding.airlinesproject.Dto.Flight.FlightResponse;
+import com.ergutlarholding.airlinesproject.Entity.Airport;
+import com.ergutlarholding.airlinesproject.Entity.Flight;
+import com.ergutlarholding.airlinesproject.Entity.Pilot;
+import com.ergutlarholding.airlinesproject.Entity.Plane;
+import com.ergutlarholding.airlinesproject.Mapper.FlightMapper;
+import com.ergutlarholding.airlinesproject.Repository.AirportRepository;
+import com.ergutlarholding.airlinesproject.Repository.FlightRepository;
+import com.ergutlarholding.airlinesproject.Repository.PilotRepository;
+import com.ergutlarholding.airlinesproject.Repository.PlaneRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -15,9 +25,11 @@ public class FlightService {
     private final PilotRepository pilotRepository;
     private final PlaneRepository planeRepository;
     private final AirportRepository airportRepository;
+    private final FlightMapper flightMapper; // İşte yeni yardımcımız!
 
+    @Transactional
     public FlightResponse createFlight(FlightRequest request) {
-        // Nesneleri tek tek bulalım (Bağlantıların doğrulanması)
+        // 1. Doğrulamalar (Aynen duruyor)
         Pilot pilot = pilotRepository.findById(request.pilotId())
                 .orElseThrow(() -> new RuntimeException("Pilot bulunamadı!"));
         Plane plane = planeRepository.findById(request.planeId())
@@ -27,8 +39,9 @@ public class FlightService {
         Airport arrAirport = airportRepository.findById(request.arrivalAirportId())
                 .orElseThrow(() -> new RuntimeException("Varış havalimanı bulunamadı!"));
 
+        // 2. Entity Oluşturma (İş kuralları burada)
         Flight flight = Flight.builder()
-                .flightCode(request.flightCode())
+                .flightCode(request.flightCode().toUpperCase()) // Küçük bir holding dokunuşu
                 .price(request.price())
                 .departureTime(request.departureTime())
                 .arrivalTime(request.arrivalTime())
@@ -38,28 +51,18 @@ public class FlightService {
                 .arrivalAirport(arrAirport)
                 .build();
 
-        return mapToResponse(flightRepository.save(flight));
+        // 3. Kaydet ve Mapper ile Dönüştür
+        Flight savedFlight = flightRepository.save(flight);
+        return flightMapper.toResponse(savedFlight); // Artık mapToResponse metodu yok!
     }
 
     public List<FlightResponse> getAllFlights() {
-        return flightRepository.findAll().stream().map(this::mapToResponse).toList();
+        // Stream().map() ameleliği bitti
+        return flightMapper.toResponseList(flightRepository.findAll());
     }
 
     public void deleteFlight(Long id) {
         flightRepository.deleteById(id);
-    }
 
-    private FlightResponse mapToResponse(Flight flight) {
-        return new FlightResponse(
-                flight.getId(),
-                flight.getFlightCode(),
-                flight.getPrice(),
-                flight.getDepartureTime(),
-                flight.getArrivalTime(),
-                flight.getPilot().getName(),
-                flight.getPlane().getPlaneName(),
-                flight.getDepartureAirport().getName(),
-                flight.getArrivalAirport().getName()
-        );
     }
 }
