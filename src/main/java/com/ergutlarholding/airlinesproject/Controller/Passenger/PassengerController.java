@@ -3,10 +3,8 @@ package com.ergutlarholding.airlinesproject.Controller.Passenger;
 import com.ergutlarholding.airlinesproject.Dto.Passenger.LoginRequest;
 import com.ergutlarholding.airlinesproject.Dto.Passenger.PassengerRequest;
 import com.ergutlarholding.airlinesproject.Dto.Passenger.PassengerResponse;
-import com.ergutlarholding.airlinesproject.Servis.PassengerService;
+import com.ergutlarholding.airlinesproject.Services.PassengerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +19,7 @@ public class PassengerController {
     private final PassengerService passengerService;
 
     // Yeni Yolcu Kaydı (Register)
-    @PostMapping("/register")
+    @PostMapping("/save")
     public ResponseEntity<PassengerResponse> register(@RequestBody PassengerRequest request) {
         return ResponseEntity.ok(passengerService.savePassenger(request));
     }
@@ -53,7 +51,7 @@ public class PassengerController {
     @DeleteMapping("delete/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         passengerService.deletePassenger(id);
-        return ResponseEntity.noContent().build(); // 204 No Content döner
+        return ResponseEntity.noContent().build(); // 204 No Content döner // 204 dönüyor ve hiç bir şey yok
     }
 
 

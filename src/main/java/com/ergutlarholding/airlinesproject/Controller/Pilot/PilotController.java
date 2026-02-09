@@ -18,7 +18,7 @@ PATCH (Kısmi Güncelleme): Dosyayı açar, sadece senin belirlediğin alanı (�
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotLogin;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotRequest;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotResponse;
-import com.ergutlarholding.airlinesproject.Servis.PilotService;
+import com.ergutlarholding.airlinesproject.Services.PilotService;
 import com.ergutlarholding.airlinesproject.Dto.Pilot.PilotSalaryUptade;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +33,7 @@ public class PilotController {
 
     private final PilotService pilotService;
 
-    @PostMapping("/register")
+    @PostMapping("/save")
     public ResponseEntity<PilotResponse> register(@RequestBody PilotRequest request) {
         return ResponseEntity.ok(pilotService.savePilot(request));
     }
@@ -56,7 +56,7 @@ public class PilotController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PilotResponse> update(@PathVariable Long id, @RequestBody PilotRequest request) {
-        return ResponseEntity.ok(pilotService.updatePilot(id, request));
+        return ResponseEntity.ok(pilotService.update(id, request));
     }
 
     @PatchMapping("/{id}/salary")

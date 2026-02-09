@@ -1,7 +1,7 @@
 package com.ergutlarholding.airlinesproject.Controller.Flight;
 
 import com.ergutlarholding.airlinesproject.Dto.Flight.*;
-import com.ergutlarholding.airlinesproject.Servis.FlightService;
+import com.ergutlarholding.airlinesproject.Services.FlightService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

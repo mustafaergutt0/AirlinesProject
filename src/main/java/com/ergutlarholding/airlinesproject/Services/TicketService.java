@@ -1,10 +1,11 @@
-package com.ergutlarholding.airlinesproject.Servis;
+package com.ergutlarholding.airlinesproject.Services;
 
 import com.ergutlarholding.airlinesproject.Dto.Ticket.TicketRequest;
 import com.ergutlarholding.airlinesproject.Dto.Ticket.TicketResponse;
 import com.ergutlarholding.airlinesproject.Entity.Flight;
 import com.ergutlarholding.airlinesproject.Entity.Passenger;
 import com.ergutlarholding.airlinesproject.Entity.Ticket;
+import com.ergutlarholding.airlinesproject.Mapper.TicketMapper;
 import com.ergutlarholding.airlinesproject.Repository.FlightRepository;
 import com.ergutlarholding.airlinesproject.Repository.PassengerRepository;
 import com.ergutlarholding.airlinesproject.Repository.TicketRepository;
@@ -20,9 +21,10 @@ public class TicketService {
     private final TicketRepository ticketRepository;
     private final FlightRepository flightRepository;
     private final PassengerRepository passengerRepository;
+    private final TicketMapper ticketMapper; // MapStruct enjeksiyonu
 
     public TicketResponse buyTicket(TicketRequest request) {
-        // 1. Uçuş ve Yolcu var mı kontrol et
+        // 1. Uçuş ve Yolcu var mı kontrol et (Senin mantığın)
         Flight flight = flightRepository.findById(request.flightId())
                 .orElseThrow(() -> new RuntimeException("Hata: Uçuş bulunamadı!"));
 
@@ -39,28 +41,17 @@ public class TicketService {
 
         Ticket savedTicket = ticketRepository.save(ticket);
 
-        // 3. Response'a çevirip gönder
+        // 3. Response'a çevirip gönder (Burada senin mapToResponse ismini mapper ile bağlıyoruz)
         return mapToResponse(savedTicket);
     }
 
     public List<TicketResponse> getAllTickets() {
-        return ticketRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .toList();
+        return ticketMapper.toResponseList(ticketRepository.findAll());
     }
 
-    // Mapper: Entity -> Response DTO
+    // Senin Helper Metodun: Artık MapStruct ile çalışıyor
     private TicketResponse mapToResponse(Ticket ticket) {
-        return TicketResponse.builder()
-                .id(ticket.getId())
-                .seatNumber(ticket.getSeatNumber())
-                .ticketClass(ticket.getTicketClass())
-                .passengerName(ticket.getPassenger().getName())
-                .flightCode(ticket.getFlight().getFlightCode())
-                .departureAirport(ticket.getFlight().getDepartureAirport().getName())
-                .arrivalAirport(ticket.getFlight().getArrivalAirport().getName())
-                .price(ticket.getFlight().getPrice()) // Fiyatı uçuştan çekiyoruz
-                .build();
+        return ticketMapper.toResponse(ticket);
     }
 
     public String deleteTicket(Long id) {
@@ -71,7 +62,7 @@ public class TicketService {
         // 2. Bileti veritabanından sil
         ticketRepository.delete(ticket);
 
-        // 3. Bilgi mesajı dön
+        // 3. Bilgi mesajı dön (Senin orijinal mesaj formatın)
         return ticket.getPassenger().getName() + " isimli yolcuya ait " +
                 ticket.getSeatNumber() + " numaralı bilet iptal edildi.";
     }

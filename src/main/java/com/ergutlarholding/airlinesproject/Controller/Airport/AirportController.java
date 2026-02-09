@@ -1,8 +1,7 @@
 package com.ergutlarholding.airlinesproject.Controller.Airport;
-
+import com.ergutlarholding.airlinesproject.Services.AirportService;
 import com.ergutlarholding.airlinesproject.Dto.Airport.AirportRequest;
 import com.ergutlarholding.airlinesproject.Dto.Airport.AirportResponse;
-import com.ergutlarholding.airlinesproject.Servis.AirportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

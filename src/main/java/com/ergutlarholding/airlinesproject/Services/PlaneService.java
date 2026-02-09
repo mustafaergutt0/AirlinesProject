@@ -1,9 +1,10 @@
-package com.ergutlarholding.airlinesproject.Servis;
+package com.ergutlarholding.airlinesproject.Services;
 
 import com.ergutlarholding.airlinesproject.Dto.Plane.PlaneRequest;
 import com.ergutlarholding.airlinesproject.Dto.Plane.PlaneResponse;
 import com.ergutlarholding.airlinesproject.Entity.Airport;
 import com.ergutlarholding.airlinesproject.Entity.Plane;
+import com.ergutlarholding.airlinesproject.Mapper.PlaneMapper;
 import com.ergutlarholding.airlinesproject.Repository.AirportRepository;
 import com.ergutlarholding.airlinesproject.Repository.PlaneRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,9 +18,10 @@ public class PlaneService {
 
     private final PlaneRepository planeRepository;
     private final AirportRepository airportRepository;
+    private final PlaneMapper planeMapper; // MapStruct enjekte edildi
 
     public PlaneResponse savePlane(PlaneRequest request) {
-        // Havalimanını bul
+        // İş Mantığı: Havalimanını bul
         Airport airport = airportRepository.findById(request.currentAirportId())
                 .orElseThrow(() -> new RuntimeException("Havalimanı bulunamadı!"));
 
@@ -30,27 +32,15 @@ public class PlaneService {
                 .currentAirport(airport)
                 .build();
 
-        return mapToResponse(planeRepository.save(plane));
+        return planeMapper.toResponse(planeRepository.save(plane));
     }
 
     public List<PlaneResponse> getAllPlanes() {
-        return planeRepository.findAll().stream()
-                .map(this::mapToResponse)
-                .toList();
+        return planeMapper.toResponseList(planeRepository.findAll());
     }
 
-    private PlaneResponse mapToResponse(Plane plane) {
-        return new PlaneResponse(
-                plane.getPlaneId(),
-                plane.getPlaneName(),
-                plane.getModel(),
-                plane.getTotalSeatCount(),
-                plane.getCurrentAirport() != null ? plane.getCurrentAirport().getCountry() : "Yolda"
-        );
-    }
-
-    public String DeleteAllPlanes() {
+    public String deleteAllPlanes() {
         planeRepository.deleteAll();
-        return "Bütün Filo boşaltıldı";
+        return "Bütün Filo başarıyla boşaltıldı.";
     }
 }
