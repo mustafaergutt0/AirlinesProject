@@ -43,7 +43,7 @@ public class Flight {
 
     // Foreign Key: Kalkış Havalimanı
     @ManyToOne
-    @JoinColumn(name = "departure_airport_id", referencedColumnName = "id")
+    @JoinColumn(name = "departure_airport_id", referencedColumnName = "id") // Aslında Column tablesindeki name orası
     private Airport departureAirport;
 
     // Foreign Key: Varış Havalimanı
