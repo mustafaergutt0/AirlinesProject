@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/pilots")
+@RequestMapping("/pilots")
 @RequiredArgsConstructor
 public class PilotController {
     private final PilotService pilotService;
