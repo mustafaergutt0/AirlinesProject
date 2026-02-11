@@ -1,4 +1,4 @@
-package com.ergutlarholding.airlinesmainservice.Dto.Pilot;
+package com.ergutlarholding.pilotservice.Dto;
 
 public record PilotLogin(
         String mail,

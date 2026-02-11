@@ -32,9 +32,8 @@ public class Flight {
     private LocalDateTime arrivalTime; // Varış Zamanı
 
     // Foreign Key: Uçuşu gerçekleştiren Pilot
-    @ManyToOne
-    @JoinColumn(name = "pilot_id", referencedColumnName = "id")
-    private Pilot pilot;
+    @Column(name = "pilot_id")
+    private Long pilotId;
 
     // Foreign Key: Uçuşta kullanılan Uçak
     @ManyToOne
