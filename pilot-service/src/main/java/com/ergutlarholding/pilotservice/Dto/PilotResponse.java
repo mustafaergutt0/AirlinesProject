@@ -1,4 +1,4 @@
-package com.ergutlarholding.airlinesmainservice.Dto.Pilot;
+package com.ergutlarholding.pilotservice.Dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

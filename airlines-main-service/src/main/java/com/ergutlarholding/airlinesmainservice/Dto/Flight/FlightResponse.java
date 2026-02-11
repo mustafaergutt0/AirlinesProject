@@ -1,4 +1,5 @@
 package com.ergutlarholding.airlinesmainservice.Dto.Flight;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -8,7 +9,7 @@ public record FlightResponse(
         BigDecimal price,
         LocalDateTime departureTime,
         LocalDateTime arrivalTime,
-        String pilotName,
+        Long pilotId, // String pilotName yerine Long pilotId geldi
         String planeName,
         String departureAirportName,
         String arrivalAirportName

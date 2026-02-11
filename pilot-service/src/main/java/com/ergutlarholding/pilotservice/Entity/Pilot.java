@@ -1,4 +1,4 @@
-package com.ergutlarholding.airlinesmainservice.Entity;
+package com.ergutlarholding.pilotservice.Entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -6,17 +6,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "pilots")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Pilot {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,7 +22,7 @@ public class Pilot {
     private String surname;
 
     @Column(unique = true, nullable = false)
-    private String mail; // Giriş yapabilmesi için
+    private String mail;
 
     @Column(nullable = false)
     private String password;
@@ -36,18 +30,13 @@ public class Pilot {
     @Column(unique = true, nullable = false)
     private String licenseNumber;
 
-
     @Builder.Default
-    private Integer flightHours=0;
+    private Integer flightHours = 0;
 
     @Column(precision = 10, scale = 2)
     private BigDecimal salary;
 
     private LocalDate birthDate;
-
-    // "Bir pilotun bir sürü uçuşu olabilir"
-    @OneToMany(mappedBy = "pilot", cascade = CascadeType.ALL)
-    private List<Flight> flights;
 
     @CreationTimestamp
     @Column(updatable = false)
