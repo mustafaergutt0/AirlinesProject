@@ -6,18 +6,7 @@ import com.ergutlarholding.airlinesmainservice.Entity.Passenger;
 import org.mapstruct.*;
 import java.util.List;
 
-@Mapper(componentModel = "spring", nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-public interface PassengerMapper {
-
-    // Entity -> Response
-    PassengerResponse toResponse(Passenger passenger);
-
-    // Request -> Entity
-    Passenger toEntity(PassengerRequest request);
-
-    // Liste dönüşümü
-    List<PassengerResponse> toResponseList(List<Passenger> passengers);
-
-    // Mevcut yolcuyu Request ile güncelleme
-    void updatePassengerFromRequest(PassengerRequest request, @MappingTarget Passenger passenger);
+@Mapper(componentModel = "spring")
+public interface PassengerMapper extends BaseMapper<Passenger, PassengerRequest, PassengerResponse> {
+    // İçerisi tamamen boş! Tüm metodlar BaseMapper'dan miras alındı.
 }
