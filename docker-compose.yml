@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  # Ergutlar Havayolları Veri Merkezi
+  airlines-db:
+    image: postgres:latest
+    container_name: airlines-container  # Görseldeki ismin aynısı
+    ports:
+      - "5432:5432"                     # Dışarıya açtığın port
+    environment:
+      - POSTGRES_USER=postgres          # Varsayılan kullanıcı
+      - POSTGRES_PASSWORD=postgres # Burayı kendi şifrenle değiştir!
+      - POSTGRES_DB=Airlinesdb         # Veritabanı adın
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Verilerin silinmemesi için
+
+volumes:
+  postgres_data:

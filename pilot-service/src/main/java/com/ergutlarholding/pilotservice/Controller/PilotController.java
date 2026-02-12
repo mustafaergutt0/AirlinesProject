@@ -18,6 +18,12 @@ public class PilotController {
         return ResponseEntity.ok(pilotService.savePilot(request));
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PilotResponse> getPilotById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(pilotService.getPilotById(id));
+
+    }
+
     @GetMapping
     public ResponseEntity<List<PilotResponse>> getAll() {
         return ResponseEntity.ok(pilotService.getAllPilots());
