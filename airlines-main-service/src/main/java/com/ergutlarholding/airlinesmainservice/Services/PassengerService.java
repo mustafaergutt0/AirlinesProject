@@ -52,7 +52,7 @@ public class PassengerService {
                 .orElseThrow(() -> new RuntimeException("Güncellenecek yolcu bulunamadı!"));
 
         // Manuel setter'lar bitti, MapStruct her şeyi tek satırda güncelledi
-        passengerMapper.updatePassengerFromRequest(request, existingPassenger);
+        passengerMapper.updateEntityFromDto(request, existingPassenger);
 
         return passengerMapper.toResponse(passengerRepository.save(existingPassenger));
     }

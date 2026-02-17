@@ -20,6 +20,7 @@
         <module>airlines-main-service</module>
         <module>api-gateway</module>
         <module>pilot-service</module>
+        <module>log-service</module>
     </modules>
 
     <properties>

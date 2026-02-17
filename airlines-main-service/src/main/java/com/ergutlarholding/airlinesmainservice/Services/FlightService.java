@@ -2,9 +2,10 @@ package com.ergutlarholding.airlinesmainservice.Services;
 
 import com.ergutlarholding.airlinesmainservice.Client.Dto.PilotResponse;
 import com.ergutlarholding.airlinesmainservice.Client.Pilot_Client;
-import com.ergutlarholding.airlinesmainservice.Client.Pilot_Client; // Yazdığın Feign Client
+import com.ergutlarholding.airlinesmainservice.Dto.Flight.FlightLogDto;
 import com.ergutlarholding.airlinesmainservice.Dto.Flight.FlightRequest;
 import com.ergutlarholding.airlinesmainservice.Dto.Flight.FlightResponse;
+import com.ergutlarholding.airlinesmainservice.Dto.Flight.FlightLogDto; // Senin oluşturduğun DTO
 import com.ergutlarholding.airlinesmainservice.Entity.Airport;
 import com.ergutlarholding.airlinesmainservice.Entity.Flight;
 import com.ergutlarholding.airlinesmainservice.Entity.Plane;
@@ -15,26 +16,29 @@ import com.ergutlarholding.airlinesmainservice.Repository.PlaneRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate; // RabbitMQ için fırlatıcı
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j // Loglama için eklendi
+@Slf4j
 public class FlightService {
 
     private final FlightRepository flightRepository;
     private final PlaneRepository planeRepository;
     private final AirportRepository airportRepository;
     private final FlightMapper flightMapper;
-
-    // ASIL PÜF NOKTASI: Mikroservisler arası iletişim için Feign Client enjeksiyonu
     private final Pilot_Client pilotClient;
+
+    // RabbitMQ mesajlarını göndermek için enjekte ettik
+    private final RabbitTemplate rabbitTemplate;
 
     @Transactional
     public FlightResponse createFlight(FlightRequest request) {
-        // 1. Yerel Veritabanı Kontrolleri (Uçak ve Havalimanları bu servisin db'sinde)
+        // 1. Yerel Veritabanı Kontrolleri (Uçak ve Havalimanları)
         Plane plane = planeRepository.findById(request.planeId())
                 .orElseThrow(() -> new RuntimeException("Hata: Uçak bulunamadı!"));
 
@@ -44,37 +48,48 @@ public class FlightService {
         Airport arrAirport = airportRepository.findById(request.arrivalAirportId())
                 .orElseThrow(() -> new RuntimeException("Hata: Varış havalimanı bulunamadı!"));
 
-        // 2. Mikroservis Kontrolü: Pilot-Service'e "Telsiz" atıyoruz
+        // 2. Mikroservis Kontrolü (Senkron - Feign Client)
         log.info("Pilot doğrulanıyor... Pilot ID: {}", request.pilotId());
         try {
-            // Feign Client üzerinden diğer servise HTTP GET isteği gider
             PilotResponse pilot = pilotClient.getPilotById(request.pilotId());
-
             if (pilot == null) {
-                throw new RuntimeException("Hata: Pilot-Service geçerli bir pilot dönmedi!");
+                throw new RuntimeException("Hata: Pilot bulunamadı!");
             }
-            log.info("Pilot doğrulandı: {} {}", pilot.name(), pilot.surname());
-
         } catch (Exception e) {
-            // Pilot-Service kapalıysa veya 404/500 dönerse burası çalışır
-            log.error("Pilot doğrulaması başarısız! Pilot-Service ulaşılamaz durumda veya ID hatalı.");
-            throw new RuntimeException("Uçuş oluşturulamadı: Pilot doğrulaması başarısız oldu.");
+            log.error("Pilot-Service ulaşılamaz durumda veya ID hatalı.");
+            throw new RuntimeException("Uçuş oluşturulamadı: Pilot doğrulaması başarısız.");
         }
 
-        // 3. Entity Oluşturma (Pilotun sadece ID'sini saklıyoruz)
+        // 3. Entity Oluşturma ve Kaydetme
         Flight flight = Flight.builder()
                 .flightCode(request.flightCode().toUpperCase())
                 .price(request.price())
                 .departureTime(request.departureTime())
                 .arrivalTime(request.arrivalTime())
-                .pilotId(request.pilotId()) // Diğer servisteki ID'yi buraya kaydediyoruz
+                .pilotId(request.pilotId())
                 .plane(plane)
                 .departureAirport(depAirport)
                 .arrivalAirport(arrAirport)
                 .build();
 
-        // 4. Kaydet ve Mapper ile Response'a dönüştür
         Flight savedFlight = flightRepository.save(flight);
+
+        // 4. EDA (Event-Driven Architecture) - Log Servisine Haber Ver (Asenkron)
+        try {
+            FlightLogDto logEvent = new FlightLogDto(
+                    "AIRLINES-MAIN-SERVICE",
+                    "YENİ UÇUŞ KAYDI: " + savedFlight.getFlightCode() + " seferi oluşturuldu.",
+                    LocalDateTime.now().toString()
+            );
+
+            // Mesajı RabbitMQ kuyruğuna (log_queue) gönderiyoruz
+            rabbitTemplate.convertAndSend("FlightQueLog", logEvent);
+            log.info("Log mesajı RabbitMQ kuyruğuna başarıyla iletildi.");
+        } catch (Exception e) {
+            // Log gitmedi diye ana işlemi (uçuş kaydını) bozmuyoruz.
+            log.warn("Log mesajı gönderilemedi ama uçuş kaydedildi: {}", e.getMessage());
+        }
+
         return flightMapper.toResponse(savedFlight);
     }
 
