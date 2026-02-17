@@ -1,0 +1,26 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-standalone
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  log-db:
+    image: postgres
+    container_name: log-db-container
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=LogDb
+    volumes:
+      - log_db_data:/var/lib/postgresql # Veriler buraya kaydedilecek
+
+# İŞTE EKSİK OLAN KISIM BURASIYDI:
+volumes:
+  log_db_data: # Docker'a bu isimde bir depolama alanı oluştur dedik
