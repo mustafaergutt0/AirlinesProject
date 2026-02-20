@@ -21,6 +21,7 @@
         <module>api-gateway</module>
         <module>pilot-service</module>
         <module>log-service</module>
+        <module>search-service</module>
     </modules>
 
     <properties>

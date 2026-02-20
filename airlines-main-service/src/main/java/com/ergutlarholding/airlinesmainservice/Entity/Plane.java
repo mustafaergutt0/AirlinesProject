@@ -28,7 +28,7 @@ public class Plane {
     private Integer totalSeatCount;
 
     // Her uçağın şu an bulunduğu tek bir lokasyon (havalimanı) vardır.
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "current_airport_id", referencedColumnName = "id")
     private Airport currentAirport;
 

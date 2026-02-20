@@ -1,0 +1,30 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: search-service
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      # Bozuk mesajları atlamak için her seferinde yeni bir grup ismi veriyoruz
+      group-id: serachindex
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        # Gelen JSON'u bu sınıfa zorla çevir
+        spring.json.value.default.type: "com.ergutlarholding.searchservice.FlightKafkaDto"
+        # Başlıktaki (Header) sınıf bilgisini görmezden gel
+        spring.json.use.type.headers: false
+
+  elasticsearch:
+    uris: http://localhost:9200
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
