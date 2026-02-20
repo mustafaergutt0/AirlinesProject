@@ -36,4 +36,7 @@ public class Airport {
 
     @OneToMany(mappedBy = "arrivalAirport", cascade = CascadeType.ALL)
     private List<Flight> arrivingFlights;
+
+    @OneToMany(mappedBy = "currentAirport")
+    private List<Plane> parkedPlanes;
 }

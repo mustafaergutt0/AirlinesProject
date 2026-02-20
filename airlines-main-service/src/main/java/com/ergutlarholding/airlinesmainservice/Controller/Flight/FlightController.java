@@ -30,4 +30,9 @@ public class FlightController {
         flightService.deleteFlight(id);
         return ResponseEntity.ok("Uçuş iptal edildi.");
     }
+
+    @DeleteMapping("/DeleteAll")
+    public ResponseEntity<String> deleteAll() {
+        return ResponseEntity.ok(flightService.DeleteAllFlights());
+    }
 }
