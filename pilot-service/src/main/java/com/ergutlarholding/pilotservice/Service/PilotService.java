@@ -18,8 +18,9 @@ public class PilotService {
     private final PilotRepository pilotRepository;
     private final PilotMapper pilotMapper;
 
-    public PilotResponse savePilot(PilotRequest request) {
+    public PilotResponse savePilot(PilotRequest request, Long authId) {
         Pilot pilot = pilotMapper.toEntity(request);
+        pilot.setAuthId(authId); // Manuel olarak authId'yi setliyoruz
         pilot.setSalary(BigDecimal.valueOf(25000));
         return pilotMapper.toResponse(pilotRepository.save(pilot));
     }

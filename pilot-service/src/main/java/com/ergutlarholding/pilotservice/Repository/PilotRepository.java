@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface PilotRepository extends JpaRepository<Pilot, Long> {
-    Optional<Pilot> findByMail(String mail);
+    Optional<Pilot> findByAuthId(Long authId);
 }

@@ -1,6 +1,5 @@
 package com.ergutlarholding.airlinesmainservice.Controller.Passenger;
 
-import com.ergutlarholding.airlinesmainservice.Dto.Passenger.LoginRequest;
 import com.ergutlarholding.airlinesmainservice.Dto.Passenger.PassengerRequest;
 import com.ergutlarholding.airlinesmainservice.Dto.Passenger.PassengerResponse;
 import com.ergutlarholding.airlinesmainservice.Services.PassengerService;
@@ -20,15 +19,12 @@ public class PassengerController {
 
     // Yeni Yolcu Kaydı (Register)
     @PostMapping("/save")
-    public ResponseEntity<PassengerResponse> register(@RequestBody PassengerRequest request) {
-        return ResponseEntity.ok(passengerService.savePassenger(request));
+    public ResponseEntity<PassengerResponse> register(
+            @RequestBody PassengerRequest request,
+            @RequestParam Long authId) { // Auth-Service'den gelen ID
+        return ResponseEntity.ok(passengerService.savePassenger(request, authId));
     }
 
-    // Giriş Yapma (Login)
-    @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
-        return ResponseEntity.ok(passengerService.login(loginRequest));
-    }
 
     // Tüm Yolcuları Getir (Sadece test amaçlı, normalde güvenli olmalı)
     @GetMapping

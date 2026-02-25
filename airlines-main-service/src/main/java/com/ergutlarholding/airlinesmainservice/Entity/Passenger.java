@@ -1,7 +1,9 @@
 package com.ergutlarholding.airlinesmainservice.Entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -13,10 +15,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Passenger {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "auth_id", unique = true, nullable = false)
+    private Long authId; // Auth-Service ile olan bağlantımız
 
     @Column(nullable = false)
     private String name;
@@ -25,20 +29,12 @@ public class Passenger {
     private String surname;
 
     @Column(unique = true, nullable = false, length = 11)
-    private String tckn; // TC Kimlik No
+    private String tckn;
 
     private String gender;
-
-    @Column(nullable = false)
-    private String password;
-
     private LocalDate birthDate;
-    @Column(unique = true)
-    private String mail;
-
     private String gsm;
 
-    // Passenger.java içine eklenecekler:
     @OneToMany(mappedBy = "passenger", cascade = CascadeType.ALL)
     private List<Ticket> tickets;
 }

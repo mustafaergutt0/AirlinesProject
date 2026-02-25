@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Redis Veritabanı
+  redis:
+    image: redis:7.2-alpine
+    container_name: airlines-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - airlines-network
+    restart: always
+
+  # Redis Insight (Görsel Arayüz - Tarayıcıdan izlemek için)
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: airlines-redis-insight
+    ports:
+      - "8001:8001"
+    networks:
+      - airlines-network
+    depends_on:
+      - redis
+
+networks:
+  airlines-network:
+    driver: bridge
+
+volumes:
+  redis_data:

@@ -8,5 +8,14 @@ import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface PassengerMapper extends BaseMapper<Passenger, PassengerRequest, PassengerResponse> {
-    // İçerisi tamamen boş! Tüm metodlar BaseMapper'dan miras alındı.
+
+    @Override
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "authId", ignore = true)
+    @Mapping(target = "tickets", ignore = true)
+    Passenger toEntity(PassengerRequest request);
+
+    @Override
+    @Mapping(target = "mail", ignore = true) // Response içinde mail bekliyorsa ama entity'de yoksa ignore et
+    PassengerResponse toResponse(Passenger passenger);
 }

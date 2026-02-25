@@ -1,6 +1,5 @@
 package com.ergutlarholding.airlinesmainservice.Services;
 
-import com.ergutlarholding.airlinesmainservice.Dto.Passenger.LoginRequest;
 import com.ergutlarholding.airlinesmainservice.Dto.Passenger.PassengerRequest;
 import com.ergutlarholding.airlinesmainservice.Dto.Passenger.PassengerResponse;
 import com.ergutlarholding.airlinesmainservice.Entity.Passenger;
@@ -18,9 +17,9 @@ public class PassengerService {
     private final PassengerRepository passengerRepository;
     private final PassengerMapper passengerMapper; // MapStruct yardımcımız
 
-    public PassengerResponse savePassenger(PassengerRequest request) {
-        // Builder bitti, Mapper geldi
+    public PassengerResponse savePassenger(PassengerRequest request, Long authId) {
         Passenger passenger = passengerMapper.toEntity(request);
+        passenger.setAuthId(authId); // Köprüyü kurduk
         return passengerMapper.toResponse(passengerRepository.save(passenger));
     }
 
@@ -35,16 +34,7 @@ public class PassengerService {
         return passengerMapper.toResponse(passenger);
     }
 
-    public String login(LoginRequest loginRequest) {
-        Passenger passenger = passengerRepository.findByMail(loginRequest.mail())
-                .orElseThrow(() -> new RuntimeException("E-posta bulunamadı!"));
 
-        if (passenger.getPassword().equals(loginRequest.password())) {
-            return "Giriş Başarılı! Hoş geldin " + passenger.getName();
-        } else {
-            throw new RuntimeException("Hatalı şifre!");
-        }
-    }
 
     @Transactional
     public PassengerResponse updatePassenger(Long id, PassengerRequest request) {
