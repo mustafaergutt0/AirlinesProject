@@ -14,8 +14,10 @@ public class PilotController {
     private final PilotService pilotService;
 
     @PostMapping("/save")
-    public ResponseEntity<PilotResponse> register(@RequestBody PilotRequest request) {
-        return ResponseEntity.ok(pilotService.savePilot(request));
+    public ResponseEntity<PilotResponse> register(
+            @RequestBody PilotRequest request,
+            @RequestParam Long authId) { // AuthId'yi yakalıyoruz
+        return ResponseEntity.ok(pilotService.savePilot(request, authId));
     }
 
     @GetMapping("/{id}")

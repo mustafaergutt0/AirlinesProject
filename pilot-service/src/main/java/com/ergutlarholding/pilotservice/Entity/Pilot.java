@@ -3,29 +3,32 @@ package com.ergutlarholding.pilotservice.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "pilots")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Pilot {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "auth_id", unique = true, nullable = false)
+    private Long authId; // Auth-Service ile olan köprümüz
 
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
     private String surname;
-
-    @Column(unique = true, nullable = false)
-    private String mail;
-
-    @Column(nullable = false)
-    private String password;
 
     @Column(unique = true, nullable = false)
     private String licenseNumber;

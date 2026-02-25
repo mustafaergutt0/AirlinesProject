@@ -9,6 +9,5 @@ public interface PassengerRepository extends JpaRepository<Passenger, Long> {
     // TCKN ile yolcu sorgulama (En çok kullanacağın sorgu budur)
     java.util.Optional<Passenger> findByTckn(String tckn);
 
-    // Mail adresine göre yolcu bulma
-    java.util.Optional<Passenger> findByMail(String mail);
+
 }
