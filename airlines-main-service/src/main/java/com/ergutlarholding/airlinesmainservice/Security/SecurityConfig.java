@@ -24,22 +24,22 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
 
-                        // 1. HERKESE AÇIK (Giriş Şartı Yok)
-                        .requestMatchers(HttpMethod.GET, "/main/airports/**", "/main/flights/getAllFlights", "/main/planes/**").permitAll()
+                        // PUBLIC
+                        .requestMatchers(HttpMethod.GET,
+                                "/main/flights/getAllFlights",
+                                "/main/planes/**"
+                        ).permitAll()
+                        .requestMatchers("/main/passengers/save").permitAll()
 
-                        // 2. SADECE ADMIN (Havalimanı, Uçak ve Uçuş Yönetimi)
-                        // hasRole kullanırken "ROLE_" kısmını Spring kendi yönetir,
-                        // ama biz Enum'da tam ismi verdiğimiz için hasAuthority daha garantidir veya hasRole("ADMIN") yeterlidir.
+                        // ADMIN
                         .requestMatchers("/main/airports/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/main/planes/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers("/main/flights/create", "/main/flights/DeleteAll").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/main/flights/**").hasAuthority("ROLE_ADMIN")
 
-                        // 3. YOLCU VE DİĞERLERİ
+                        // PASSENGER + ADMIN
                         .requestMatchers("/main/tickets/buy").hasAnyAuthority("ROLE_PASSENGER", "ROLE_ADMIN")
-                        .requestMatchers("/main/passengers/save").permitAll() // Login olan herkes profil oluşturabilsin
 
-                        // 4. GERİ KALANLAR
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

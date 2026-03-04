@@ -1,7 +1,5 @@
 package com.ergutlarholding.airlinesmainservice.Security;
 
- // Paket ismini kendine göre düzenle
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -15,20 +13,25 @@ import java.util.function.Function;
 @Service
 public class JwtService {
 
-    // DİKKAT: Auth-Service'deki anahtarın aynısını buraya yapıştır!
+    // Auth-Service ile AYNI secret olmalı
     private final String SECRET = "bu-cok-gizli-ve-uzun-bir-anahtar-olmali-en-az-256-bit";
 
-    // 1. Token'dan mail adresini (Subject) çıkarır
+    // Username (sub)
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
-    // 2. Token geçerli mi? (İmza doğru mu ve süresi dolmuş mu?)
+    // ✅ sid claim'ini çıkar
+    public String extractSid(String token) {
+        return extractAllClaims(token).get("sid", String.class);
+    }
+
+    // Token geçerli mi? (imza + exp)
     public boolean isTokenValid(String token) {
         try {
             return !isTokenExpired(token);
         } catch (Exception e) {
-            return false; // İmza yanlışsa veya hata oluşursa geçersiz say
+            return false;
         }
     }
 
@@ -42,7 +45,7 @@ public class JwtService {
 
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
-        return claimsResolver.apply(claims);
+        return claimsResolver.apply(claims); // ✅ HATASIZ
     }
 
     private Claims extractAllClaims(String token) {

@@ -16,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -80,38 +82,39 @@ public class AuthService {
     }
 
 
-
     public String login(LoginRequest request) {
-        // 1. Kullanıcıyı bul
+
         User user = userRepository.findByMail(request.getMail())
                 .orElseThrow(() -> new RuntimeException("Kullanıcı bulunamadı"));
 
-        // 2. Şifre kontrolü
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new RuntimeException("Hatalı şifre!");
         }
 
-        // 3. Token üret
-        String token = jwtService.generateToken(user.getMail(), user.getRole().name());
+        // ✅ 1) Redis için ayrı unique sessionId üret
+        String sessionId = UUID.randomUUID().toString();
+        String redisKey = "sess:" + sessionId;
 
-        // 4. Redis'e Kaydet (Map/Obje Mantığı)
-        try {
-            Map<String, Object> sessionData = new HashMap<>();
-            sessionData.put("authId", user.getId());
-            sessionData.put("email", user.getMail());
-            sessionData.put("role", user.getRole().name());
+        // ✅ 2) Redis'e JWT ile ilgili hiçbir şey yazma (Map yaz)
+        Map<String, Object> sessionData = new HashMap<>();
+        sessionData.put("authId", user.getId());
+        sessionData.put("email", user.getMail());
+        sessionData.put("role", user.getRole().name());
+        sessionData.put("createdAt", System.currentTimeMillis());
 
-            // Key: Token, Value: sessionData (Map), Süre: 10 Saat
-            // RedisConfig'deki Serializer sayesinde bu otomatik JSON olur
-            redisTemplate.opsForValue().set(token, sessionData, 10, java.util.concurrent.TimeUnit.HOURS);
+        // TTL: JWT exp ile aynı olsun (1 saat)
+        redisTemplate.opsForValue().set(redisKey, sessionData, 1, TimeUnit.HOURS);
 
-            log.info("Kullanıcı oturumu Redis'e kaydedildi: {}", user.getMail());
-        } catch (Exception e) {
-            log.error("Redis'e kayıt yapılamadı! Hata: {}", e.getMessage());
-            // Opsiyonel: Redis hatasında login devam mı etsin kalsın mı?
-            // Genelde güvenlik için hata fırlatılır.
-        }
+        // ✅ 3) JWT üret: içine sid = sessionId gömülür
+        String token = jwtService.generateToken(user.getMail(), user.getRole().name(), sessionId);
+        // jwt sistemde gezecek ama jwt içnideki session ıd ile rediste session ıd gçerli olursa
+        // jwt işlem görecek
+
+
+        log.info("Kullanıcı oturumu Redis'e kaydedildi. redisKey={}, email={}", redisKey, user.getMail());
 
         return token;
     }
+
+
 }
