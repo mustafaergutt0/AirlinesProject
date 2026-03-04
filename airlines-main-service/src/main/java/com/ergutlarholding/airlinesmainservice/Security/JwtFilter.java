@@ -5,7 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate; // Eklendi
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,57 +23,72 @@ import java.util.Map;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final RedisTemplate<String, Object> redisTemplate; // Redis bağlantısı eklendi
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
-        final String jwt;
 
-        // 1. Bearer Token kontrolü
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
+        String jwt = authHeader.substring(7);
 
-        // 2. KRİTİK ADIM: Redis'ten oturum bilgilerini çekiyoruz
-        // Auth-Service login anında bu token'ı key, bilgileri Map (Value) olarak kaydetmişti.
-        Map<String, Object> sessionData = (Map<String, Object>) redisTemplate.opsForValue().get(jwt);
-
-        // Eğer Redis'te bu token yoksa (Logout olunmuş veya süre bitmiş), geçişi engelle!
-        if (sessionData == null) {
+        // 1️⃣ JWT imza + exp kontrol
+        if (!jwtService.isTokenValid(jwt)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Oturum geçersiz veya sona ermiş. Lütfen tekrar giriş yapın.");
+            response.getWriter().write("Token gecersiz veya suresi dolmus.");
             return;
         }
 
-        // 3. Bilgileri Redis'teki Map'ten alıyoruz (DB'ye veya JWT'yi tekrar çözmeye gerek kalmadı)
+        // 2️⃣ JWT'den sid çıkar
+        String sid = jwtService.extractSid(jwt);
+        if (sid == null || sid.isBlank()) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token icinde sid bulunamadi.");
+            return;
+        }
+
+        // 3️⃣ Redis'te sess:{sid} kontrol
+        String redisKey = "sess:" + sid;
+
+        Map<String, Object> sessionData =
+                (Map<String, Object>) redisTemplate.opsForValue().get(redisKey);
+
+        if (sessionData == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Oturum gecersiz veya sona ermis.");
+            return;
+        }
+
+        // 4️⃣ Session bilgilerini al
         String userEmail = (String) sessionData.get("email");
         String role = (String) sessionData.get("role");
 
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (userEmail != null &&
+                SecurityContextHolder.getContext().getAuthentication() == null) {
 
-            // JWT imza kontrolü (Güvenlik için çift dikiş)
-            if (jwtService.isTokenValid(jwt)) {
+            List<SimpleGrantedAuthority> authorities =
+                    Collections.singletonList(new SimpleGrantedAuthority(role));
 
-                List<SimpleGrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority(role));
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(
+                            userEmail,
+                            null,
+                            authorities
+                    );
 
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                        userEmail,
-                        null,
-                        authorities
-                );
+            authToken.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
 
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-                // 4. Spring Security bağlamına kullanıcıyı yerleştir
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
+            SecurityContextHolder.getContext().setAuthentication(authToken);
         }
 
         filterChain.doFilter(request, response);
